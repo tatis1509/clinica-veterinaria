@@ -1,0 +1,103 @@
+# Render Blueprint: crea la base de datos y los 3 microservicios desde este repositorio.
+# Render -> New -> Blueprint -> elegir el repo. Las variables con "sync: false" se piden en el panel.
+# Plan gratis: 1 sola base PostgreSQL gratis por cuenta, por eso los 3 servicios comparten la misma
+# base (las tablas no se repiten entre servicios y cada servicio solo toca las suyas).
+databases:
+  - name: veterinaria-db
+    databaseName: veterinaria
+    plan: free
+
+services:
+  - type: web
+    name: ms-duenos-pagos
+    runtime: docker
+    plan: free
+    rootDir: ms-duenos-pagos
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: veterinaria-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: veterinaria-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: veterinaria-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: veterinaria-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: veterinaria-db, property: password }
+      - key: DB_POOL_SIZE
+        value: "5"
+
+  - type: web
+    name: ms-notificaciones
+    runtime: docker
+    plan: free
+    rootDir: ms-notificaciones
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: veterinaria-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: veterinaria-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: veterinaria-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: veterinaria-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: veterinaria-db, property: password }
+      - key: DB_POOL_SIZE
+        value: "5"
+      # SMTP (Brevo recomendado: smtp-relay.brevo.com, puerto 2525)
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "2525"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_SMTP_AUTH
+        value: "true"
+      - key: MAIL_STARTTLS
+        value: "true"
+      # Twilio
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+
+  - type: web
+    name: ms-mascotas-atencion
+    runtime: docker
+    plan: free
+    rootDir: ms-mascotas-atencion
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: veterinaria-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: veterinaria-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: veterinaria-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: veterinaria-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: veterinaria-db, property: password }
+      - key: DB_POOL_SIZE
+        value: "5"
+      # URL publica de los otros servicios (https://ms-duenos-pagos-xxxx.onrender.com)
+      - key: DUENOS_SERVICE_URL
+        sync: false
+      - key: NOTIFICACIONES_SERVICE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash

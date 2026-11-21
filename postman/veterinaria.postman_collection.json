@@ -1,0 +1,1116 @@
+{
+  "info": {
+    "_postman_id": "10e046ae-61ff-4974-92dc-6b648f0bc81c",
+    "name": "Clínica Veterinaria - Microservicios",
+    "description": "Flujo completo de los 3 microservicios. Ejecutar en orden con el Collection Runner. Cada request valida el código HTTP y que responda en menos de 500 ms (los envíos de correo/SMS y la IA tienen un límite mayor porque dependen de APIs externas).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get(\"correo\")) {",
+          "  pm.collectionVariables.set(\"correo\", \"dueno\" + Date.now() + \"@correo.com\");",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. ms-duenos-pagos",
+      "item": [
+        {
+          "name": "CRUD - Registrar dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"duenoId\", pm.response.json().idDueno);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana Gómez\",\n  \"documento\": \"1010101010\",\n  \"correo\": \"{{correo}}\",\n  \"clave\": \"Clave123\",\n  \"telefono\": \"3001234567\",\n  \"direccion\": \"Calle 10 # 5-20\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CRUD - Listar dueños",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlDuenos}}/duenos"
+          }
+        },
+        {
+          "name": "CRUD - Consultar dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlDuenos}}/duenos/{{duenoId}}"
+          }
+        },
+        {
+          "name": "CRUD - Actualizar dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos/{{duenoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana María Gómez\",\n  \"documento\": \"1010101010\",\n  \"correo\": \"{{correo}}\",\n  \"telefono\": \"3001234567\",\n  \"direccion\": \"Carrera 7 # 20-30\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 1 - Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.test(\"Autenticado\", () => pm.expect(pm.response.json().autenticado).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correo}}\",\n  \"clave\": \"Clave123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 2 - Recargar saldo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos/saldo/recargar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duenoId\": \"{{duenoId}}\",\n  \"monto\": 300000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 3 - Descontar saldo (cobro directo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"referenciaCobro\", pm.response.json().referencia);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos/saldo/descontar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duenoId\": \"{{duenoId}}\",\n  \"monto\": 35000,\n  \"referencia\": \"BANO-{{$timestamp}}\",\n  \"descripcion\": \"Baño y peluquería\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 4 - Reversar cobro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlDuenos}}/duenos/saldo/reversar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duenoId\": \"{{duenoId}}\",\n  \"referencia\": \"{{referenciaCobro}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 5 - Movimientos del dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlDuenos}}/duenos/{{duenoId}}/movimientos"
+          }
+        },
+        {
+          "name": "Consultar saldo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlDuenos}}/duenos/{{duenoId}}/saldo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. ms-mascotas-atencion",
+      "item": [
+        {
+          "name": "CRUD Tipos - Listar tipos de atención",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/tipos-atencion"
+          }
+        },
+        {
+          "name": "CRUD Tipos - Crear tipo de atención",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"tipoId\", pm.response.json().idTipoAtencion);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/tipos-atencion",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Control post-operatorio {{$timestamp}}\",\n  \"descripcion\": \"Revisión de puntos\",\n  \"precio\": 30000,\n  \"duracionMinutos\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CRUD Tipos - Consultar tipo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/tipos-atencion/{{tipoId}}"
+          }
+        },
+        {
+          "name": "CRUD Tipos - Actualizar tipo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/tipos-atencion/{{tipoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Control post-operatorio {{$timestamp}}\",\n  \"descripcion\": \"Revisión de puntos y vendaje\",\n  \"precio\": 32000,\n  \"duracionMinutos\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CRUD Tipos - Eliminar tipo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{urlMascotas}}/tipos-atencion/{{tipoId}}"
+          }
+        },
+        {
+          "name": "CRUD Mascotas - Registrar mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"mascotaId\", pm.response.json().idMascota);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Toby\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Labrador\",\n  \"edad\": 4,\n  \"peso\": 25.5,\n  \"duenoId\": \"{{duenoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CRUD Mascotas - Listar mascotas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/mascotas"
+          }
+        },
+        {
+          "name": "CRUD Mascotas - Consultar mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/mascotas/{{mascotaId}}"
+          }
+        },
+        {
+          "name": "CRUD Mascotas - Actualizar mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/mascotas/{{mascotaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Toby\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Labrador\",\n  \"edad\": 5,\n  \"peso\": 26.1,\n  \"duenoId\": \"{{duenoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 1 - Agregar servicio: Consulta general",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"ordenId\", pm.response.json().idOrden);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/atenciones/{{mascotaId}}/agregar-servicio",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoAtencionId\": 1,\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 1 - Agregar servicio: Vacunación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.test(\"Total = Consulta + Vacuna\", () => pm.expect(pm.response.json().total).to.eql(105000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/atenciones/{{mascotaId}}/agregar-servicio",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoAtencionId\": 2,\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Consultar orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/atenciones/{{ordenId}}"
+          }
+        },
+        {
+          "name": "Extra 2 - Confirmar atención (cobra y notifica)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.test(\"Orden REALIZADA\", () => pm.expect(pm.response.json().orden.estado).to.eql(\"REALIZADA\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{urlMascotas}}/atenciones/{{ordenId}}/confirmar-atencion"
+          }
+        },
+        {
+          "name": "Extra 3 - Mascotas del dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/mascotas/dueno/{{duenoId}}"
+          }
+        },
+        {
+          "name": "Extra 4 - Historial de la mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlMascotas}}/atenciones/historial-mascota/{{mascotaId}}"
+          }
+        },
+        {
+          "name": "Extra 5 - Triaje con IA (Gemini)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 8000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(8000));",
+                  "pm.test(\"Trae nivel de urgencia\", () => pm.expect([\"ALTA\",\"MEDIA\",\"BAJA\"]).to.include(pm.response.json().nivelUrgencia));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlMascotas}}/mascotas/triaje-ia",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"especie\": \"Perro\",\n  \"raza\": \"Labrador\",\n  \"edad\": 5,\n  \"peso\": 25,\n  \"sintomas\": \"Vómito y decaimiento desde ayer, no quiere comer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancelar atención (reversa el cobro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.test(\"Orden CANCELADA\", () => pm.expect(pm.response.json().estado).to.eql(\"CANCELADA\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{urlMascotas}}/atenciones/{{ordenId}}/cancelar"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. ms-notificaciones",
+      "item": [
+        {
+          "name": "CRUD - Registrar notificación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));",
+                  "pm.collectionVariables.set(\"notificacionId\", pm.response.json().idNotificacion);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlNotificaciones}}/notificaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canal\": \"EMAIL\",\n  \"tipo\": \"CONFIRMACION_CITA\",\n  \"destinatario\": \"{{correo}}\",\n  \"asunto\": \"Cita agendada\",\n  \"mensaje\": \"Su cita quedó agendada para mañana a las 10:00 a.m.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CRUD - Listar notificaciones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlNotificaciones}}/notificaciones"
+          }
+        },
+        {
+          "name": "CRUD - Consultar notificación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlNotificaciones}}/notificaciones/{{notificacionId}}"
+          }
+        },
+        {
+          "name": "CRUD - Actualizar estado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlNotificaciones}}/notificaciones/{{notificacionId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"FALLIDA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 5 - Reintentar notificación fallida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{urlNotificaciones}}/notificaciones/{{notificacionId}}/reintentar"
+          }
+        },
+        {
+          "name": "Extra 1 - Enviar email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlNotificaciones}}/notificaciones/enviar-email",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destinatario\": \"{{correo}}\",\n  \"asunto\": \"Receta de Toby\",\n  \"mensaje\": \"Amoxicilina 250 mg cada 12 horas por 7 días.\",\n  \"tipo\": \"COMPROBANTE_ATENCION\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 2 - Enviar SMS (Twilio)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlNotificaciones}}/notificaciones/enviar-sms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"3001234567\",\n  \"mensaje\": \"Clínica Veterinaria: su cita de mañana 10:00 a.m. está confirmada.\",\n  \"tipo\": \"CONFIRMACION_CITA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 3 - Recordatorio de vacuna",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{urlNotificaciones}}/notificaciones/recordatorio-vacuna",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreDueno\": \"Ana\",\n  \"correo\": \"{{correo}}\",\n  \"telefono\": \"3001234567\",\n  \"nombreMascota\": \"Toby\",\n  \"vacuna\": \"Rabia\",\n  \"fechaProximaDosis\": \"2026-12-15\",\n  \"canal\": \"EMAIL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Extra 4 - Historial por destinatario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{urlNotificaciones}}/notificaciones/historial/{{correo}}"
+          }
+        },
+        {
+          "name": "CRUD - Eliminar notificación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{urlNotificaciones}}/notificaciones/{{notificacionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Limpieza",
+      "item": [
+        {
+          "name": "CRUD Mascotas - Eliminar mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{urlMascotas}}/mascotas/{{mascotaId}}"
+          }
+        },
+        {
+          "name": "CRUD - Eliminar dueño",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Responde en menos de 500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{urlDuenos}}/duenos/{{duenoId}}"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "correo",
+      "value": ""
+    },
+    {
+      "key": "duenoId",
+      "value": ""
+    },
+    {
+      "key": "referenciaCobro",
+      "value": ""
+    },
+    {
+      "key": "tipoId",
+      "value": ""
+    },
+    {
+      "key": "mascotaId",
+      "value": ""
+    },
+    {
+      "key": "ordenId",
+      "value": ""
+    },
+    {
+      "key": "notificacionId",
+      "value": ""
+    }
+  ]
+}

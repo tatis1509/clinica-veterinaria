@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Agregador: abre esta carpeta en IntelliJ y carga los 3 microservicios. "mvn clean verify" compila y prueba todo. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.veterinaria</groupId>
+    <artifactId>clinica-veterinaria</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>clinica-veterinaria</name>
+
+    <modules>
+        <module>ms-duenos-pagos</module>
+        <module>ms-mascotas-atencion</module>
+        <module>ms-notificaciones</module>
+    </modules>
+</project>
